@@ -12,11 +12,12 @@ export type CampaignActionState = {
 };
 
 function toPayload(formData: FormData) {
+  const rawSchedule = String(formData.get("scheduled_at") ?? "");
   return {
     name: String(formData.get("name") ?? ""),
     channel: String(formData.get("channel") ?? ""),
-    message: String(formData.get("message") ?? ""),
-    scheduled_at: String(formData.get("scheduled_at") ?? ""),
+    description: String(formData.get("description") ?? ""),
+    scheduled_at: rawSchedule.trim() ? rawSchedule : "",
     status: String(formData.get("status") ?? ""),
   };
 }
@@ -33,10 +34,15 @@ export async function createCampaignAction(_prevState: CampaignActionState, form
   const supabase = await createServerSupabaseClient();
   await requireAdminForCampaigns(supabase);
 
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user?.id) {
+    return { error: "Authentication required to create campaign." };
+  }
+
   const { error } = await supabase.from("campaigns").insert({
     ...parsed.data,
-    created_by: userData.user?.id,
+    scheduled_at: parsed.data.scheduled_at ? new Date(parsed.data.scheduled_at).toISOString() : null,
+    created_by: userData.user.id,
   });
 
   if (error) {
@@ -60,13 +66,23 @@ export async function updateCampaignAction(_prevState: CampaignActionState, form
   const supabase = await createServerSupabaseClient();
   await requireAdminForCampaigns(supabase);
 
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user?.id) {
+    return { error: "Authentication required to edit campaign." };
+  }
+
   const { error } = await supabase
     .from("campaigns")
     .update({
-      ...parsed.data,
+      name: parsed.data.name,
+      channel: parsed.data.channel,
+      description: parsed.data.description,
+      scheduled_at: parsed.data.scheduled_at ? new Date(parsed.data.scheduled_at).toISOString() : null,
+      status: parsed.data.status,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("created_by", userData.user.id);
 
   if (error) {
     return { error: error.message };
@@ -80,7 +96,12 @@ export async function deleteCampaignAction(id: string) {
   const supabase = await createServerSupabaseClient();
   await requireAdminForCampaigns(supabase);
 
-  const { error } = await supabase.from("campaigns").delete().eq("id", id);
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user?.id) {
+    throw new Error("Authentication required to delete campaign.");
+  }
+
+  const { error } = await supabase.from("campaigns").delete().eq("id", id).eq("created_by", userData.user.id);
 
   if (error) {
     throw error;

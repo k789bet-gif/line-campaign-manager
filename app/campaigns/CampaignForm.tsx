@@ -31,7 +31,7 @@ export default function CampaignForm({
 
         <div className="form-field">
           <label htmlFor="channel">ช่องทางการส่ง</label>
-          <select id="channel" name="channel" defaultValue={campaign?.channel ?? "LINE Official"} required>
+          <select id="channel" name="channel" defaultValue={campaign?.channel ?? "line"} required>
             {channelOptions.map((value) => (
               <option key={value} value={value}>{value}</option>
             ))}
@@ -50,14 +50,14 @@ export default function CampaignForm({
         </div>
 
         <div className="form-field full-width">
-          <label htmlFor="message">ข้อความ</label>
-          <textarea id="message" name="message" required defaultValue={campaign?.message ?? ""} rows={5} placeholder="ข้อความแคมเปญ"></textarea>
-          {state.fieldErrors?.message && <span className="form-error">{state.fieldErrors.message}</span>}
+          <label htmlFor="description">ข้อความ</label>
+          <textarea id="description" name="description" required defaultValue={campaign?.description ?? ""} rows={5} placeholder="รายละเอียดแคมเปญ"></textarea>
+          {state.fieldErrors?.description && <span className="form-error">{state.fieldErrors.description}</span>}
         </div>
 
         <div className="form-field full-width">
           <label htmlFor="scheduled_at">วันเวลาเริ่มส่ง</label>
-          <input id="scheduled_at" name="scheduled_at" type="datetime-local" defaultValue={campaign?.scheduled_at ? campaign.scheduled_at.slice(0, 16) : ""} required />
+          <input id="scheduled_at" name="scheduled_at" type="datetime-local" defaultValue={campaign?.scheduled_at ? campaign.scheduled_at.slice(0, 16) : ""} />
           {state.fieldErrors?.scheduled_at && <span className="form-error">{state.fieldErrors.scheduled_at}</span>}
         </div>
       </div>

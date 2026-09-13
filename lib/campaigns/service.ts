@@ -5,8 +5,8 @@ export type CampaignRecord = {
   id: string;
   name: string;
   channel: string;
-  message: string;
-  scheduled_at: string;
+  description: string;
+  scheduled_at: string | null;
   status: string;
   created_at?: string;
   updated_at?: string;
@@ -40,8 +40,8 @@ export async function requireAdminForCampaigns(supabase: SupabaseClient) {
 export async function readCampaigns(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("campaigns")
-    .select("id, name, channel, message, scheduled_at, status, created_at, updated_at")
-    .order("scheduled_at", { ascending: false });
+    .select("id, name, channel, description, scheduled_at, status, created_at, updated_at")
+    .order("created_at", { ascending: false });
 
   if (error) {
     return { data: [] as CampaignRecord[], error };
@@ -53,7 +53,7 @@ export async function readCampaigns(supabase: SupabaseClient) {
 export async function readCampaign(supabase: SupabaseClient, id: string) {
   const { data, error } = await supabase
     .from("campaigns")
-    .select("id, name, channel, message, scheduled_at, status, created_at, updated_at")
+    .select("id, name, channel, description, scheduled_at, status, created_at, updated_at")
     .eq("id", id)
     .maybeSingle();
 

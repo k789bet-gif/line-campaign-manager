@@ -491,6 +491,8 @@ input {
   color: rgba(238, 253, 244, 0.78);
   font-size: 14px;
   font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
@@ -1016,6 +1018,55 @@ input {
 .campaign-status.draft {
   background: #fff4dd;
   color: #af7626;
+}
+
+.campaign-status.failed {
+  background: #ffdada;
+  color: var(--danger);
+}
+
+.dashboard-panel-row {
+  margin-top: 16px;
+  display: block;
+}
+
+.dashboard-table-panel {
+  width: 100%;
+}
+
+.campaign-table-wrap {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+
+.campaign-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.campaign-table th {
+  text-align: left;
+  color: var(--text-light);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  text-transform: uppercase;
+}
+
+.campaign-table td {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-soft);
+}
+
+.campaign-table tr:last-child td {
+  border-bottom: none;
+}
+
+.campaign-table strong {
+  color: var(--text);
 }
 
 .activity-row {

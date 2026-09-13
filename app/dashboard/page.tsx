@@ -3,7 +3,8 @@ import {
   Bell,
   Calendar,
   CheckCircle2,
-  CircleDollarSign,
+  ChartNoAxesCombined,
+  Clock3,
   FileText,
   Gauge,
   LayoutDashboard,
@@ -12,13 +13,13 @@ import {
   MapPin,
   Megaphone,
   Menu,
+  MessageCircle,
   Package,
   Plus,
   Rocket,
   Search,
   Settings,
   ShieldCheck,
-  Target,
   Users,
   X,
 } from "lucide-react";
@@ -28,12 +29,12 @@ import { logoutAction } from "./actions";
 export const dynamic = "force-dynamic";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Megaphone, label: "Campaigns", active: false },
-  { icon: Users, label: "Members", active: false },
-  { icon: ShieldCheck, label: "Admins", active: false },
-  { icon: FileText, label: "Logs", active: false },
-  { icon: Settings, label: "Settings", active: false },
+  { icon: LayoutDashboard, label: "Dashboard", active: true, href: "/dashboard" },
+  { icon: Megaphone, label: "Campaigns", active: false, href: "/campaigns" },
+  { icon: MessageCircle, label: "Messages", active: false, href: "/messages" },
+  { icon: Users, label: "Members", active: false, href: "/members" },
+  { icon: ChartNoAxesCombined, label: "Reports", active: false, href: "/reports" },
+  { icon: Settings, label: "Settings", active: false, href: "/settings" },
 ];
 
 const campaignTrend = [
@@ -44,6 +45,20 @@ const campaignTrend = [
   { name: "05", value: 73, color: "bg-teal-500" },
   { name: "06", value: 87, color: "bg-green-600" },
   { name: "07", value: 78, color: "bg-emerald-500" },
+];
+
+const summaryCards = [
+  { label: "Campaign ทั้งหมด", value: "24", meta: "8 กำลังดำเนินการ", icon: Megaphone, chip: "+12%", chipClass: "positive" },
+  { label: "ส่งข้อความสำเร็จ", value: "18", meta: "2,840 messages", icon: CheckCircle2, chip: "+8%", chipClass: "positive" },
+  { label: "รอดำเนินการ", value: "04", meta: "2 แคมเปญในคิว", icon: Clock3, chip: "Live", chipClass: "warning" },
+  { label: "ส่งไม่สำเร็จ", value: "02", meta: "ตรวจสอบทันที", icon: X, chip: "Alert", chipClass: "neutral" },
+];
+
+const latestCampaigns = [
+  { name: "Summer Launch", channel: "LINE Official", status: "ส่งข้อความสำเร็จ", sentAt: "13 Sep 2026, 10:00", owner: "Growth Team" },
+  { name: "Member Rewards", channel: "SMS", status: "รอดำเนินการ", sentAt: "14 Sep 2026, 09:30", owner: "Retention Team" },
+  { name: "Flash Sale", channel: "Email", status: "ส่งไม่สำเร็จ", sentAt: "14 Sep 2026, 11:45", owner: "Marketing Team" },
+  { name: "VIP Welcome", channel: "LINE Official", status: "ส่งข้อความสำเร็จ", sentAt: "15 Sep 2026, 13:15", owner: "CRM Team" },
 ];
 
 export default async function DashboardPage() {
@@ -77,7 +92,7 @@ export default async function DashboardPage() {
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
-              <a key={item.label} className={`nav-item ${item.active ? "active" : ""}`}> 
+              <a key={item.label} className={`nav-item ${item.active ? "active" : ""}`} href={item.href}> 
                 <span className="nav-icon"><Icon size={19} /></span>
                 <span>{item.label}</span>
               </a>
@@ -113,65 +128,31 @@ export default async function DashboardPage() {
               <Bell size={19} />
               <span className="badge-dot"></span>
             </button>
-            <button className="add-button">
+            <a className="add-button" href="/campaigns/new">
               <Plus size={16} />
-              สร้างแคมเปญ
-            </button>
+              สร้าง Campaign
+            </a>
           </div>
         </section>
 
         <section className="summary-grid">
-          <article className="summary-card">
-            <div className="summary-card-top">
-              <span className="summary-icon lime"><Megaphone size={20} /></span>
-              <span className="summary-chip positive">+12%</span>
-            </div>
-            <div className="summary-label">แคมเปญทั้งหมด</div>
-            <div className="summary-value">24</div>
-            <div className="summary-meta">
-              <span>8 แคมเปญกำลังทำงาน</span>
-              <span className="summary-arrow">↗</span>
-            </div>
-          </article>
-
-          <article className="summary-card">
-            <div className="summary-card-top">
-              <span className="summary-icon blue"><Users size={20} /></span>
-              <span className="summary-chip positive">+8%</span>
-            </div>
-            <div className="summary-label">สมาชิกที่ลงทะเบียน</div>
-            <div className="summary-value">8,642</div>
-            <div className="summary-meta">
-              <span>+324 สมาชิกใหม่</span>
-              <span className="summary-arrow">↗</span>
-            </div>
-          </article>
-
-          <article className="summary-card">
-            <div className="summary-card-top">
-              <span className="summary-icon purple"><Target size={20} /></span>
-              <span className="summary-chip warning">Live</span>
-            </div>
-            <div className="summary-label">อัตราการ Conversion</div>
-            <div className="summary-value">6.84%</div>
-            <div className="summary-meta">
-              <span>เป้าหมายเดือนนี้</span>
-              <span className="summary-arrow">↗</span>
-            </div>
-          </article>
-
-          <article className="summary-card">
-            <div className="summary-card-top">
-              <span className="summary-icon orange"><CircleDollarSign size={20} /></span>
-              <span className="summary-chip neutral">Budget</span>
-            </div>
-            <div className="summary-label">งบประมาณใช้ไป</div>
-            <div className="summary-value">฿84,250</div>
-            <div className="summary-meta">
-              <span>รวม 74% ของงบ</span>
-              <span className="summary-arrow">↗</span>
-            </div>
-          </article>
+          {summaryCards.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article className="summary-card" key={item.label}>
+                <div className="summary-card-top">
+                  <span className="summary-icon"><Icon size={20} /></span>
+                  <span className={`summary-chip ${item.chipClass}`}>{item.chip}</span>
+                </div>
+                <div className="summary-label">{item.label}</div>
+                <div className="summary-value">{item.value}</div>
+                <div className="summary-meta">
+                  <span>{item.meta}</span>
+                  <span className="summary-arrow">↗</span>
+                </div>
+              </article>
+            );
+          })}
         </section>
 
         <section className="analytics-grid">
@@ -222,21 +203,21 @@ export default async function DashboardPage() {
               <div className="channel-row">
                 <div className="channel-label">
                   <span className="channel-swatch market"></span>
-                  <span>Social Ads</span>
+                  <span>SMS</span>
                 </div>
                 <span className="channel-percent">29%</span>
               </div>
               <div className="channel-row">
                 <div className="channel-label">
                   <span className="channel-swatch event"></span>
-                  <span>Event</span>
+                  <span>Email</span>
                 </div>
                 <span className="channel-percent">17%</span>
               </div>
               <div className="channel-row">
                 <div className="channel-label">
                   <span className="channel-swatch referral"></span>
-                  <span>Referral</span>
+                  <span>Push</span>
                 </div>
                 <span className="channel-percent">8%</span>
               </div>
@@ -244,49 +225,46 @@ export default async function DashboardPage() {
           </article>
         </section>
 
-        <section className="bottom-grid">
-          <article className="panel">
+        <section className="dashboard-panel-row">
+          <article className="panel dashboard-table-panel">
             <div className="panel-header compact">
               <div>
                 <span className="panel-label">Campaign Status</span>
                 <h2 className="panel-title">แคมเปญล่าสุด</h2>
               </div>
-              <button className="icon-button small"><Plus size={17} /></button>
+              <a className="icon-button small" href="/campaigns/new"><Plus size={17} /></a>
             </div>
-            <div className="campaign-list">
-              <div className="campaign-row">
-                <div className="campaign-title">
-                  <span className="campaign-icon"><Megaphone size={16} /></span>
-                  <span>
-                    <strong>Winter Launch</strong>
-                    <small>LINE Official</small>
-                  </span>
-                </div>
-                <span className="campaign-status successful">โพสต์แล้ว</span>
-              </div>
-              <div className="campaign-row">
-                <div className="campaign-title">
-                  <span className="campaign-icon"><Package size={16} /></span>
-                  <span>
-                    <strong>Member Rewards</strong>
-                    <small>Referral</small>
-                  </span>
-                </div>
-                <span className="campaign-status running">กำลังทำงาน</span>
-              </div>
-              <div className="campaign-row">
-                <div className="campaign-title">
-                  <span className="campaign-icon"><Calendar size={16} /></span>
-                  <span>
-                    <strong>Flash Sale</strong>
-                    <small>Social Ads</small>
-                  </span>
-                </div>
-                <span className="campaign-status draft">รอเริ่ม</span>
-              </div>
+
+            <div className="campaign-table-wrap">
+              <table className="campaign-table">
+                <thead>
+                  <tr>
+                    <th>ชื่อแคมเปญ</th>
+                    <th>ช่องทาง</th>
+                    <th>เวลาเริ่มส่ง</th>
+                    <th>ทีม</th>
+                    <th>สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {latestCampaigns.map((campaign) => (
+                    <tr key={campaign.name}>
+                      <td><strong>{campaign.name}</strong></td>
+                      <td>{campaign.channel}</td>
+                      <td>{campaign.sentAt}</td>
+                      <td>{campaign.owner}</td>
+                      <td>
+                        <span className={`campaign-status ${campaign.status === "ส่งข้อความสำเร็จ" ? "successful" : campaign.status === "รอดำเนินการ" ? "running" : campaign.status === "ส่งไม่สำเร็จ" ? "failed" : "draft"}`}>{campaign.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </article>
+        </section>
 
+        <section className="bottom-grid">
           <article className="panel">
             <div className="panel-header compact">
               <div>
@@ -299,7 +277,7 @@ export default async function DashboardPage() {
               <div className="activity-row">
                 <span className="activity-icon success"><CheckCircle2 size={15} /></span>
                 <div>
-                  <span className="activity-title">Winter Launch อัปเดต Landing Page</span>
+                  <span className="activity-title">Summer Launch อัปเดต Landing Page</span>
                   <small>08:45 น. • Admin Team</small>
                 </div>
               </div>

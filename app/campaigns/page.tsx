@@ -52,9 +52,9 @@ export default async function CampaignsPage() {
                         <span className="separator">•</span>
                         <span>{campaign.status}</span>
                         <span className="separator">•</span>
-                        <span><Calendar size={14} /> {new Date(campaign.scheduled_at).toLocaleString("th-TH")}</span>
+                        <span><Calendar size={14} /> {campaign.scheduled_at ? new Date(campaign.scheduled_at).toLocaleString("th-TH") : "ยังไม่กำหนดเวลา"}</span>
                       </div>
-                      <div className="campaign-message">{campaign.message}</div>
+                      <div className="campaign-message">{campaign.description}</div>
                     </div>
                   </div>
 
