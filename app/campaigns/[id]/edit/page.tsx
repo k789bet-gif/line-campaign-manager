@@ -8,29 +8,34 @@ export default async function EditCampaignPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const supabase = await createServerSupabaseClient();
-  await requireAdminForCampaigns(supabase);
+  try {
+    const supabase = await createServerSupabaseClient();
+    await requireAdminForCampaigns(supabase);
 
-  const { id } = await params;
-  const { data: campaign, error } = await readCampaign(supabase, id);
+    const { id } = await params;
+    const { data: campaign, error } = await readCampaign(supabase, id);
 
-  if (error || !campaign) {
-    return <div className="form-alert error">ไม่พบบัญชีแคมเปญนี้</div>;
-  }
+    if (error || !campaign) {
+      return <div className="form-alert error">ไม่พบบัญชีแคมเปญนี้</div>;
+    }
 
-  return (
-    <div className="app-shell">
-      <section className="campaign-form-page">
-        <div className="page-topbar">
-          <div>
-            <span className="page-kicker">Campaign Management</span>
-            <h1 className="page-title">แก้ไข Campaign</h1>
+    return (
+      <div className="app-shell">
+        <section className="campaign-form-page">
+          <div className="page-topbar">
+            <div>
+              <span className="page-kicker">Campaign Management</span>
+              <h1 className="page-title">แก้ไข Campaign</h1>
+            </div>
           </div>
-        </div>
-        <section className="campaign-form-card">
-          <CampaignForm mode="edit" campaign={campaign} action={updateCampaignAction} />
+          <section className="campaign-form-card">
+            <CampaignForm mode="edit" campaign={campaign} action={updateCampaignAction} />
+          </section>
         </section>
-      </section>
-    </div>
-  );
+      </div>
+    );
+  } catch (error) {
+    const message = error instanceof Error && error.message === "ยังไม่พบโปรไฟล์ผู้ใช้" ? "ยังไม่พบโปรไฟล์ผู้ใช้" : "ไม่สามารถโหลดหน้าการแก้ไข Campaign ได้";
+    return <div className="form-alert error">{message}</div>;
+  }
 }

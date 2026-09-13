@@ -12,12 +12,20 @@ export type CampaignActionState = {
 };
 
 function toPayload(formData: FormData) {
-  const rawSchedule = String(formData.get("scheduled_at") ?? "");
+  const rawStartDate = String(formData.get("start_date") ?? "");
+  const rawStartTime = String(formData.get("start_time") ?? "");
+  const rawInterval = String(formData.get("interval_minutes") ?? "");
+
   return {
     name: String(formData.get("name") ?? ""),
-    channel: String(formData.get("channel") ?? ""),
-    description: String(formData.get("description") ?? ""),
-    scheduled_at: rawSchedule.trim() ? rawSchedule : "",
+    message_type: String(formData.get("message_type") ?? ""),
+    text_content: String(formData.get("text_content") ?? ""),
+    image_url: String(formData.get("image_url") ?? ""),
+    flex_json: String(formData.get("flex_json") ?? ""),
+    alt_text: String(formData.get("alt_text") ?? ""),
+    start_date: rawStartDate.trim() ? rawStartDate : "",
+    start_time: rawStartTime.trim() ? rawStartTime : "",
+    interval_minutes: rawInterval.trim() ? rawInterval : "",
     status: String(formData.get("status") ?? ""),
   };
 }
@@ -32,17 +40,20 @@ export async function createCampaignAction(_prevState: CampaignActionState, form
   }
 
   const supabase = await createServerSupabaseClient();
-  await requireAdminForCampaigns(supabase);
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user?.id) {
-    return { error: "Authentication required to create campaign." };
-  }
+  const user = await requireAdminForCampaigns(supabase);
 
   const { error } = await supabase.from("campaigns").insert({
-    ...parsed.data,
-    scheduled_at: parsed.data.scheduled_at ? new Date(parsed.data.scheduled_at).toISOString() : null,
-    created_by: userData.user.id,
+    user_id: user.id,
+    name: parsed.data.name,
+    message_type: parsed.data.message_type,
+    text_content: parsed.data.text_content,
+    image_url: parsed.data.image_url || null,
+    flex_json: parsed.data.flex_json || null,
+    alt_text: parsed.data.alt_text || null,
+    start_date: parsed.data.start_date || null,
+    start_time: parsed.data.start_time || null,
+    interval_minutes: parsed.data.interval_minutes ? Number(parsed.data.interval_minutes) : null,
+    status: parsed.data.status,
   });
 
   if (error) {
@@ -64,25 +75,25 @@ export async function updateCampaignAction(_prevState: CampaignActionState, form
   }
 
   const supabase = await createServerSupabaseClient();
-  await requireAdminForCampaigns(supabase);
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user?.id) {
-    return { error: "Authentication required to edit campaign." };
-  }
+  const user = await requireAdminForCampaigns(supabase);
 
   const { error } = await supabase
     .from("campaigns")
     .update({
       name: parsed.data.name,
-      channel: parsed.data.channel,
-      description: parsed.data.description,
-      scheduled_at: parsed.data.scheduled_at ? new Date(parsed.data.scheduled_at).toISOString() : null,
+      message_type: parsed.data.message_type,
+      text_content: parsed.data.text_content,
+      image_url: parsed.data.image_url || null,
+      flex_json: parsed.data.flex_json || null,
+      alt_text: parsed.data.alt_text || null,
+      start_date: parsed.data.start_date || null,
+      start_time: parsed.data.start_time || null,
+      interval_minutes: parsed.data.interval_minutes ? Number(parsed.data.interval_minutes) : null,
       status: parsed.data.status,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("created_by", userData.user.id);
+    .eq("user_id", user.id);
 
   if (error) {
     return { error: error.message };
@@ -94,14 +105,9 @@ export async function updateCampaignAction(_prevState: CampaignActionState, form
 
 export async function deleteCampaignAction(id: string) {
   const supabase = await createServerSupabaseClient();
-  await requireAdminForCampaigns(supabase);
+  const user = await requireAdminForCampaigns(supabase);
 
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user?.id) {
-    throw new Error("Authentication required to delete campaign.");
-  }
-
-  const { error } = await supabase.from("campaigns").delete().eq("id", id).eq("created_by", userData.user.id);
+  const { error } = await supabase.from("campaigns").delete().eq("id", id).eq("user_id", user.id);
 
   if (error) {
     throw error;

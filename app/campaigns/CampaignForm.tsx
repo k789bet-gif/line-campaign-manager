@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { CalendarDays, Megaphone, Save } from "lucide-react";
-import { channelOptions, statusOptions } from "@/lib/campaigns/schema";
+import { messageTypeOptions, statusOptions } from "@/lib/campaigns/schema";
 import type { CampaignRecord } from "@/lib/campaigns/service";
 import type { CampaignActionState } from "./actions";
 
@@ -30,13 +30,13 @@ export default function CampaignForm({
         </div>
 
         <div className="form-field">
-          <label htmlFor="channel">ช่องทางการส่ง</label>
-          <select id="channel" name="channel" defaultValue={campaign?.channel ?? "line"} required>
-            {channelOptions.map((value) => (
+          <label htmlFor="message_type">ประเภทข้อความ</label>
+          <select id="message_type" name="message_type" defaultValue={campaign?.message_type ?? "text"} required>
+            {messageTypeOptions.map((value) => (
               <option key={value} value={value}>{value}</option>
             ))}
           </select>
-          {state.fieldErrors?.channel && <span className="form-error">{state.fieldErrors.channel}</span>}
+          {state.fieldErrors?.message_type && <span className="form-error">{state.fieldErrors.message_type}</span>}
         </div>
 
         <div className="form-field">
@@ -50,15 +50,42 @@ export default function CampaignForm({
         </div>
 
         <div className="form-field full-width">
-          <label htmlFor="description">ข้อความ</label>
-          <textarea id="description" name="description" required defaultValue={campaign?.description ?? ""} rows={5} placeholder="รายละเอียดแคมเปญ"></textarea>
-          {state.fieldErrors?.description && <span className="form-error">{state.fieldErrors.description}</span>}
+          <label htmlFor="text_content">ข้อความ</label>
+          <textarea id="text_content" name="text_content" required defaultValue={campaign?.text_content ?? ""} rows={5} placeholder="รายละเอียดแคมเปญ"></textarea>
+          {state.fieldErrors?.text_content && <span className="form-error">{state.fieldErrors.text_content}</span>}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="image_url">URL รูปภาพ</label>
+          <input id="image_url" name="image_url" type="url" defaultValue={campaign?.image_url ?? ""} placeholder="https://example.com/image.jpg" />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="alt_text">คำอธิบายรูปภาพ</label>
+          <input id="alt_text" name="alt_text" defaultValue={campaign?.alt_text ?? ""} placeholder="คำอธิบายประกอบภาพ" />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="start_date">วันที่เริ่มส่ง</label>
+          <input id="start_date" name="start_date" type="date" defaultValue={campaign?.start_date ?? ""} />
+          {state.fieldErrors?.start_date && <span className="form-error">{state.fieldErrors.start_date}</span>}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="start_time">เวลาเริ่มส่ง</label>
+          <input id="start_time" name="start_time" type="time" defaultValue={campaign?.start_time ?? ""} />
+          {state.fieldErrors?.start_time && <span className="form-error">{state.fieldErrors.start_time}</span>}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="interval_minutes">ทุกกี่นาที</label>
+          <input id="interval_minutes" name="interval_minutes" type="number" min="1" max="10080" defaultValue={campaign?.interval_minutes ?? 15} />
+          {state.fieldErrors?.interval_minutes && <span className="form-error">{state.fieldErrors.interval_minutes}</span>}
         </div>
 
         <div className="form-field full-width">
-          <label htmlFor="scheduled_at">วันเวลาเริ่มส่ง</label>
-          <input id="scheduled_at" name="scheduled_at" type="datetime-local" defaultValue={campaign?.scheduled_at ? campaign.scheduled_at.slice(0, 16) : ""} />
-          {state.fieldErrors?.scheduled_at && <span className="form-error">{state.fieldErrors.scheduled_at}</span>}
+          <label htmlFor="flex_json">Flex JSON</label>
+          <textarea id="flex_json" name="flex_json" defaultValue={campaign?.flex_json ?? ""} rows={5} placeholder={'{ "type": "bubble" }'}></textarea>
         </div>
       </div>
 

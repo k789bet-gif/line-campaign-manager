@@ -14,12 +14,10 @@ import {
   Megaphone,
   Menu,
   MessageCircle,
-  Package,
   Plus,
   Rocket,
   Search,
   Settings,
-  ShieldCheck,
   Users,
   X,
 } from "lucide-react";
@@ -47,27 +45,73 @@ const campaignTrend = [
   { name: "07", value: 78, color: "bg-emerald-500" },
 ];
 
-const summaryCards = [
-  { label: "Campaign ทั้งหมด", value: "24", meta: "8 กำลังดำเนินการ", icon: Megaphone, chip: "+12%", chipClass: "positive" },
-  { label: "ส่งข้อความสำเร็จ", value: "18", meta: "2,840 messages", icon: CheckCircle2, chip: "+8%", chipClass: "positive" },
-  { label: "รอดำเนินการ", value: "04", meta: "2 แคมเปญในคิว", icon: Clock3, chip: "Live", chipClass: "warning" },
-  { label: "ส่งไม่สำเร็จ", value: "02", meta: "ตรวจสอบทันที", icon: X, chip: "Alert", chipClass: "neutral" },
-];
-
-const latestCampaigns = [
-  { name: "Summer Launch", channel: "LINE Official", status: "ส่งข้อความสำเร็จ", sentAt: "13 Sep 2026, 10:00", owner: "Growth Team" },
-  { name: "Member Rewards", channel: "SMS", status: "รอดำเนินการ", sentAt: "14 Sep 2026, 09:30", owner: "Retention Team" },
-  { name: "Flash Sale", channel: "Email", status: "ส่งไม่สำเร็จ", sentAt: "14 Sep 2026, 11:45", owner: "Marketing Team" },
-  { name: "VIP Welcome", channel: "LINE Official", status: "ส่งข้อความสำเร็จ", sentAt: "15 Sep 2026, 13:15", owner: "CRM Team" },
-];
-
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.auth.getUser();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  if (error || !data.user) {
+  if (userError || !userData.user) {
     redirect("/login");
   }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, role, display_name")
+    .eq("id", userData.user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    return (
+      <div className="app-shell">
+        <section className="campaigns-page">
+          <div className="form-alert error">ไม่สามารถอ่านโปรไฟล์ผู้ใช้ได้: schema ของ profiles ไม่ตรงกับ contract ใน repository กรุณายืนยัน schema ก่อนใช้งาน Dashboard ต่อ</div>
+        </section>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="app-shell">
+        <section className="campaigns-page">
+          <div className="form-alert error">ยังไม่พบโปรไฟล์ผู้ใช้</div>
+        </section>
+      </div>
+    );
+  }
+
+  const { data: campaignsData } = await supabase
+    .from("campaigns")
+    .select("id, name, channel, status, scheduled_at, created_at, updated_at")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const totalCampaigns = campaignsData?.length ?? 0;
+  const successCount = 0;
+  const pendingCount = campaignsData?.filter((campaign) => campaign.status === "scheduled" || campaign.status === "running").length ?? 0;
+  const failedCount = 0;
+
+  const summaryCards = [
+    { label: "Campaign ทั้งหมด", value: String(totalCampaigns), meta: `${pendingCount} กำลังดำเนินการ`, icon: Megaphone, chip: totalCampaigns > 0 ? "+12%" : "0%", chipClass: "positive" },
+    { label: "ส่งข้อความสำเร็จ", value: String(successCount), meta: `${successCount} messages`, icon: CheckCircle2, chip: successCount > 0 ? "+8%" : "0%", chipClass: "positive" },
+    { label: "รอดำเนินการ", value: String(pendingCount).padStart(2, "0"), meta: `${pendingCount} แคมเปญในคิว`, icon: Clock3, chip: "Live", chipClass: "warning" },
+    { label: "ส่งไม่สำเร็จ", value: String(failedCount).padStart(2, "0"), meta: "ตรวจสอบทันที", icon: X, chip: "Alert", chipClass: "neutral" },
+  ];
+
+  const latestCampaigns = (campaignsData ?? []).map((campaign) => ({
+    name: campaign.name,
+    channel: campaign.channel ?? "line",
+    status: campaign.status === "completed" ? "ส่งข้อความสำเร็จ" : campaign.status === "running" || campaign.status === "scheduled" ? "รอดำเนินการ" : campaign.status === "failed" ? "ส่งไม่สำเร็จ" : "ฉบับร่าง",
+    sentAt: campaign.scheduled_at ? new Date(campaign.scheduled_at).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" }) : "ยังไม่กำหนดเวลา",
+    owner: profile.display_name || "User",
+  }));
+
+  const displayName = profile.display_name || "ผู้ใช้";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase() ?? "")
+    .join("") || "U";
 
   return (
     <div className="dashboard-app">
@@ -81,10 +125,10 @@ export default async function DashboardPage() {
         </div>
 
         <div className="sidebar-profile">
-          <div className="profile-avatar">AM</div>
+          <div className="profile-avatar">{initials}</div>
           <div>
-            <div className="profile-name">Admin Manager</div>
-            <div className="profile-role">Super Admin</div>
+            <div className="profile-name">{displayName}</div>
+            <div className="profile-role">{profile.role ?? "viewer"}</div>
           </div>
         </div>
 
